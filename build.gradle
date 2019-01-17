@@ -1,0 +1,132 @@
+def final GEN_DIR = "$projectDir/gen"
+
+buildscript {
+    ext {
+        kotlinVersion = '1.2.70'
+        springBootVersion = '2.1.0.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
+        classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
+    }
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-spring'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'com.google.protobuf'
+apply plugin: 'groovy'
+
+group = 'com.choruru.base'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+compileKotlin {
+    kotlinOptions {
+        freeCompilerArgs = ["-Xjsr305=strict"]
+        jvmTarget = "1.8"
+    }
+    // protobuf related
+    doFirst {
+        file(new File(GEN_DIR + "/main")).mkdirs()
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        freeCompilerArgs = ["-Xjsr305=strict"]
+        jvmTarget = "1.8"
+    }
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.5'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    implementation('org.springframework.boot:spring-boot-starter')
+    implementation('org.springframework.boot:spring-boot-starter-security')
+    implementation('org.springframework.boot:spring-boot-starter-data-jpa')
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+    // grpc
+    implementation('io.github.lognet:grpc-spring-boot-starter:3.0.0')
+
+    // db
+    implementation('com.h2database:h2:1.4.197')
+
+    // social authentication
+    // implementation('org.springframework.social:spring-social-core:1.1.6.RELEASE')
+    // implementation('com.github.spring-social:spring-social-google:latest.release')
+    // implementation('org.springframework.social:spring-social-facebook:2.0.3.RELEASE')
+    // implementation('org.springframework.social:spring-social-twitter:1.1.2.RELEASE')
+
+    // util
+    implementation('com.auth0:java-jwt:3.4.1')
+    implementation('io.github.microutils:kotlin-logging:1.6.20')
+
+    // test
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+    testImplementation('org.spockframework:spock-core:1.2-groovy-2.5')
+    testImplementation('org.spockframework:spock-spring:1.2-groovy-2.5')
+}
+
+// protobuf related
+protobuf {
+    generatedFilesBaseDir = GEN_DIR
+
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.5.1-1"
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.16.1'
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
+
+clean {
+    doLast {
+        file(new File(GEN_DIR).deleteDir())
+    }
+}
+
+sourceSets {
+    gen {
+        kotlin {
+            srcDir GEN_DIR
+        }
+    }
+}
+
+idea {
+    module {
+        // proto files and generated Java files are automatically added as source dirs.
+        // If you have additional sources, add them here:
+        sourceDirs += file(GEN_DIR + "/main/grpc")
+        sourceDirs += file(GEN_DIR + "/main/java")
+    }
+}
+

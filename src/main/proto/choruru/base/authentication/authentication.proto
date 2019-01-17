@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package choruru.base.authentication;
+
+option java_package = "choruru.base.authentication";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+/*
+<code> ::= <where>_<why>
+<where> ::=  <CLIENT> | <SERVER> | <UNKNOWN>
+<why> ::= INVALID-INPUT
+*/
+message Error {
+    string message = 1;
+    string code = 2;
+    repeated UserErrorMessage user_message = 3;
+}
+
+message UserErrorMessage {
+    string lang = 1;
+    string message = 2;
+}
+
+// Sign Up
+message SignUpReq {
+    string email = 1;
+    string password = 2;
+}
+
+message SignUpRes {
+    string jwt = 1;
+    repeated Error error = 2;
+}
+
+// Sign Up Confirm
+message ConfirmSignUpReq {
+    string jwt = 1;
+}
+
+message ConfirmSignUpRes {
+    string jwt = 1;
+    repeated Error error = 2;
+}
+
+// Authentication
+message PasswordAuthenticateReq {
+    string email = 1;
+    string password = 2;
+}
+
+message JwtAuthenticateReq {
+    string jwt = 1;
+}
+
+message AuthenticateRes {
+    bool is_authorized = 1;
+    string jwt = 2;
+    repeated Error error = 3;
+}
+
+message LeaveReq {
+    string jwt = 1;
+}
+
+message LeaveRes {
+    bool is_left = 1;
+    repeated Error error = 2;
+}
+
+// Service
+service AuthenticationService {
+    rpc SignUp (SignUpReq) returns (SignUpRes);
+    rpc ConfirmSignUp (ConfirmSignUpReq) returns (ConfirmSignUpRes);
+    rpc AuthenticateByPassword (PasswordAuthenticateReq) returns (AuthenticateRes);
+    rpc AuthenticateByJwt (JwtAuthenticateReq) returns (AuthenticateRes);
+    rpc Leave (LeaveReq) returns (LeaveRes);
+}
+
+

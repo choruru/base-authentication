@@ -1,0 +1,4 @@
+grpc:
+  enableReflection: true
+  enabled: false
+  inProcessServerName: authTestServer
